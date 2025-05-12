@@ -42,7 +42,7 @@ jobs:
         run: make build-ui
 
       - name: Build production image
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+        if: github.event_name == 'push' && (startsWith(github.ref, 'refs/tags') || startsWith(github.ref, 'refs/heads/develop'))
         run: docker build -t ghcr.io/sjinks/aleph-ui-production:${GITHUB_SHA} -f ui/Dockerfile.production ui
 
       - name: Push docker image (tagged)
@@ -65,7 +65,7 @@ jobs:
         if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/develop')
         run: |
           echo "${GITHUB_TOKEN}" | docker login ghcr.io -u "${GITHUB_ACTOR}" --password-stdin
-          docker tag ghcr.io/sjinks/aleph-ui:${GITHUB_SHA} ghcr.io/sjinks/aleph-ui:edge
-          docker push ghcr.io/sjinks/aleph-ui:edge
+          docker tag ghcr.io/sjinks/aleph-ui-production:${GITHUB_SHA} ghcr.io/sjinks/aleph-ui-production:edge
+          docker push ghcr.io/sjinks/aleph-ui-production:edge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
