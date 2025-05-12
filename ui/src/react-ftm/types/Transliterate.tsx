@@ -11,16 +11,11 @@ import './Transliterate.scss';
 
 interface ITransliterateProps {
   value: string;
-  lookup?: any;
+  lookup?: Record<string, string>;
   truncate?: number;
 }
 
 class Transliterate extends React.PureComponent<ITransliterateProps> {
-  constructor(props: ITransliterateProps) {
-    super(props);
-
-    this.copyText = this.copyText.bind(this);
-  }
   onOpen = () => {
     document.addEventListener('copy', this.copyText);
   };
@@ -30,13 +25,16 @@ class Transliterate extends React.PureComponent<ITransliterateProps> {
   };
 
   copyText = (e: ClipboardEvent) => {
-    e.clipboardData?.setData('text/plain', this.getTranslitValue());
-    e.preventDefault();
+    const transliteratedValue = this.getTranslitValue();
+    if (transliteratedValue) {
+      e.clipboardData!.setData('text/plain', transliteratedValue);
+      e.preventDefault();
+    }
   };
 
   getTranslitValue() {
     const { lookup, value } = this.props;
-    return lookup[value];
+    return lookup?.[value];
   }
 
   componentWillUnmount(): void {
@@ -44,41 +42,38 @@ class Transliterate extends React.PureComponent<ITransliterateProps> {
   }
 
   render() {
-    const { lookup, value, truncate } = this.props;
-    if (!lookup || !lookup[value]) {
+    const { value, truncate } = this.props;
+    const transliteratedValue = this.getTranslitValue();
+    if (!transliteratedValue) {
       return truncate ? truncateText(value, truncate) : value;
     }
     const symbol =
       navigator.userAgent.indexOf('Mac OS X') !== -1 ? '⌘' : 'Ctrl';
 
     return (
-      <>
-        <Tooltip
-          popoverClassName={c(
-            'Transliterate__popover',
-            Classes.MINIMAL,
-            Classes.SMALL
-          )}
-          onOpening={this.onOpen}
-          onClosing={this.onClose}
-          content={
-            <>
-              <span className="Transliterate__popover__main">
-                {this.getTranslitValue()}
-              </span>
-              <span className="Transliterate__popover__secondary">
-                <code>{symbol}</code>+<code>C</code> to copy
-              </span>
-            </>
-          }
-        >
-          <span
-            className={c('Transliterate', TooltipClasses.TOOLTIP2_INDICATOR)}
-          >
-            {truncate ? truncateText(value, truncate) : value}
-          </span>
-        </Tooltip>
-      </>
+      <Tooltip
+        popoverClassName={c(
+          'Transliterate__popover',
+          Classes.MINIMAL,
+          Classes.SMALL
+        )}
+        onOpening={this.onOpen}
+        onClosing={this.onClose}
+        content={
+          <>
+            <span className="Transliterate__popover__main">
+              {transliteratedValue}
+            </span>
+            <span className="Transliterate__popover__secondary">
+              <code>{symbol}</code>+<code>C</code> to copy
+            </span>
+          </>
+        }
+      >
+        <span className={c('Transliterate', TooltipClasses.TOOLTIP2_INDICATOR)}>
+          {truncate ? truncateText(value, truncate) : value}
+        </span>
+      </Tooltip>
     );
   }
 }
