@@ -112,6 +112,7 @@ export class DocumentManager extends Component {
       collection,
       document,
       fileSizeProp,
+      fileNameProp,
       query,
       result,
       hasPending,
@@ -227,7 +228,7 @@ export class DocumentManager extends Component {
             writeable={showActions}
             updateSelection={this.updateSelection}
             emptyComponent={emptyComponent}
-            columns={[getGroupField('dates'), fileSizeProp]}
+            columns={[getGroupField('dates'), fileSizeProp, fileNameProp]}
           />
         </div>
       </div>
@@ -238,7 +239,9 @@ export class DocumentManager extends Component {
 const mapStateToProps = (state, ownProps) => {
   const { collection } = ownProps;
   const model = selectModel(state);
-  const fileSizeProp = model.getSchema('Document').getProperty('fileSize');
+  const schema = model.getSchema('Document');
+  const fileSizeProp = schema.getProperty('fileSize');
+  const fileNameProp = schema.getProperty('fileName');
 
   let { query } = ownProps;
   query = query.defaultSortBy('caption', 'asc');
@@ -254,6 +257,12 @@ const mapStateToProps = (state, ownProps) => {
       name: 'fileSize',
       label: fileSizeProp.label,
       type: fileSizeProp.type.name,
+      isProperty: true,
+    },
+    fileNameProp: {
+      name: 'fileName',
+      label: fileNameProp.label,
+      type: fileNameProp.type.name,
       isProperty: true,
     },
   };
